@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0718">
+<title>Bloom — Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Palette */
+  --bg: #0f0718;
+  --surface: #1a0f2e;
+  --card: #221536;
+  --card2: #2a1a40;
+  --rose: #ff6b9d;
+  --rose-dim: #c4507a;
+  --violet: #a855f7;
+  --violet-dim: #7c3aed;
+  --mint: #34d399;
+  --sky: #38bdf8;
+  --gold: #fbbf24;
+  --text: #f0e6ff;
+  --text-mid: #b89fd4;
+  --text-soft: #7a6896;
+  
+  /* Effects */
+  --glow-rose: rgba(255,107,157,0.25);
+  --glow-violet: rgba(168,85,247,0.25);
+  --glow-mint: rgba(52,211,153,0.2);
+  --r: 24px; 
+  
+  /* Safe Areas */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  -webkit-tap-highlight-color: transparent; 
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+html { height: 100%; overflow: hidden; font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Ambient Background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 0% 0%, rgba(168,85,247,0.15), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(255,107,157,0.12), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== ONBOARDING OVERLAY ===== */
+#onboarding {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+/* Changed: Logic handles display:none in JS, but class keeps it hidden if needed */
+#onboarding.hidden-screen {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ob-logo { font-size: 64px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+.ob-title { 
+  font-family: 'Fraunces', serif; 
+  font-size: 32px; 
+  color: var(--rose); 
+  margin-bottom: 10px; 
+}
+.ob-sub { font-size: 18px; color: var(--text-mid); margin-bottom: 32px; line-height: 1.5; }
+
+.ob-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 18px 24px;
+  font-size: 20px;
+  background: var(--card);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  color: var(--text);
+  text-align: center;
+  outline: none;
+  margin-bottom: 24px;
+  transition: border-color 0.3s;
+}
+.ob-input:focus { border-color: var(--violet); }
+
+/* ===== MAIN SHELL ===== */
+.shell {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex; /* Default display, opacity handles visibility */
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: calc(var(--safe-bot) + 80px);
+  
+  /* Start invisible */
+  opacity: 0; 
+  transition: opacity 0.6s ease;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 20px 24px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.greeting {
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.h-name {
+  font-family: 'Fraunces', serif;
+  font-size: 32px; 
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.h-name em { color: var(--rose); font-style: italic; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.notif-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--card);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  color: var(--text);
+}
+.live-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(52,211,153,0.15);
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: flex; align-items: center; gap: 6px;
+}
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--mint);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+/* ===== NAVIGATION (Bottom Bar Style) ===== */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(70px + var(--safe-bot));
+  background: rgba(26, 15, 46, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 12px;
+  z-index: 100;
+  padding-bottom: var(--safe-bot);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-soft);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  width: 20%;
+  transition: color 0.3s;
+}
+.nav-item span { font-size: 24px; margin-bottom: 2px; transition: transform 0.2s; }
+.nav-item.active { color: var(--violet); }
+.nav-item.active span { transform: translateY(-2px); color: var(--violet); }
+
+/* ===== PAGES ===== */
+.pages { flex: 1; position: relative; overflow: hidden; }
+.page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 20px 20px;
+  display: none; 
+  -webkit-overflow-scrolling: touch;
+}
+.page.active { display: block; animation: fadeIn 0.3s ease; }
+
+/* ===== COMPONENTS ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.card-label {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 16px;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:active { transform: scale(0.96); }
+.btn-violet { background: linear-gradient(135deg, var(--violet), var(--violet-dim)); color: white; box-shadow: 0 4px 15px var(--glow-violet); }
+.btn-rose { background: linear-gradient(135deg, var(--rose), var(--rose-dim)); color: white; box-shadow: 0 4px 15px var(--glow-rose); }
+.btn-ghost { background: rgba(255,255,255,0.08); color: var(--text); }
+
+/* ===== HOME DASHBOARD ===== */
+.hero-stat {
+  display: flex; align-items: center; gap: 24px;
+  background: linear-gradient(135deg, #2a0a3a, #1a0f2e);
+  border: 1px solid rgba(168,85,247,0.2);
+}
+.hero-circle {
+  position: relative;
+  width: 100px; height: 100px;
+  flex-shrink: 0;
+}
+.hero-svg { transform: rotate(-90deg); width: 100px; height: 100px; }
+.h-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 10; }
+.h-fill { 
+  fill: none; 
+  stroke: var(--rose); 
+  stroke-width: 10; 
+  stroke-linecap: round; 
+  stroke-dasharray: 280; 
+  stroke-dashoffset: 280; 
+  transition: stroke-dashoffset 0.8s ease; 
+}
+.hero-inner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.hero-val { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: var(--text); }
+.hero-unit { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+
+.hero-info { flex: 1; }
+.hero-big { font-family: 'Fraunces', serif; font-size: 42px; color: var(--text); line-height: 1; }
+.hero-sub { font-size: 14px; color: var(--text-mid); margin-top: 4px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.mini-card {
+  background: rgba(255,255,255,0.03);
+  padding: 16px; border-radius: 20px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.mc-icon { font-size: 32px; margin-bottom: 8px; display: block; }
+.mc-val { display: block; font-size: 24px; font-weight: 700; color: var(--text); }
+.mc-lbl { font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ===== WATER ===== */
+.water-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px;
+}
+.glass {
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(56,189,248,0.2);
+  border-radius: 16px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.glass.filled { background: rgba(56,189,248,0.2); border-color: var(--sky); }
+.glass:active { transform: scale(0.92); }
+.glass-emoji { font-size: 28px; position: relative; z-index: 2; }
+.glass-txt { font-size: 10px; color: var(--text-soft); margin-top: 4px; position: relative; z-index: 2; }
+
+/* ===== DIET ===== */
+.meal-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px; background: rgba(255,255,255,0.03);
+  border-radius: 16px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05);
+}
+.m-emoji { font-size: 32px; }
+.m-info { flex: 1; }
+.m-name { font-size: 18px; font-weight: 600; }
+.m-cal { font-size: 14px; color: var(--rose); font-weight: 700; }
+.m-del { background: none; border: none; color: var(--text-soft); font-size: 24px; padding: 0 8px; }
+
+/* ===== FORMS ===== */
+.input-group { margin-bottom: 16px; }
+.f-label { display: block; font-size: 12px; color: var(--text-soft); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.f-input {
+  width: 100%;
+  padding: 16px;
+  background: rgba(0,0,0,0.2);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 18px; 
+  outline: none;
+  font-family: inherit;
+}
+.f-input:focus { border-color: var(--violet); }
+
+/* ===== SCHEDULE ===== */
+.task-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.task-time {
+  min-width: 70px;
+  font-size: 14px; font-weight: 700; color: var(--violet);
+  text-align: center;
+}
+.task-check {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; cursor: pointer; transition: all 0.2s;
+}
+.task-check.done { background: var(--mint); border-color: var(--mint); color: #0f2a1a; }
+.task-text { flex: 1; font-size: 16px; line-height: 1.4; }
+.task-text.done { opacity: 0.5; text-decoration: line-through; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; top: 24px; left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: rgba(255,255,255,0.95);
+  color: #1a0f2e;
+  padding: 14px 24px;
+  border-radius: 50px;
+  font-size: 15px; font-weight: 600;
+  z-index: 9999;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  text-align: center; width: max-content; max-width: 90%;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-logo">🌸</div>
+  <div class="ob-title">Welcome to Bloom</div>
+  <div class="ob-sub">A simple wellness companion for you.<br>Let's start by getting to know you.</div>
+  <input type="text" id="nameInput" class="ob-input" placeholder="Enter your name" autocomplete="off">
+  <button class="btn btn-violet" onclick="finishOnboarding()" style="max-width:320px; height:56px; font-size:18px;">
+    Get Started
+  </button>
+</div>
+
+<!-- MAIN APP -->
+<!-- Changed: Removed inline display:none style, relying on opacity: 0 CSS -->
+<div class="shell" id="appShell">
+  
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="greeting">Good Morning</div>
+      <div class="h-name">Hello, <em id="displayUserName">Friend</em></div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge" id="sensorBadge" style="display:none;">
+        <div class="live-dot"></div> LIVE
+      </div>
+      <div class="notif-btn" onclick="sendTestNotification()">🔔</div>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <div class="pages">
+    
+    <!-- HOME -->
+    <div class="page active" id="pg-home">
+      <div class="card hero-stat">
+        <div class="hero-circle">
+          <svg class="hero-svg" viewBox="0 0 100 100">
+            <circle class="h-bg" cx="50" cy="50" r="45"/>
+            <circle class="h-fill" id="homeRing" cx="50" cy="50" r="45"/>
+          </svg>
+          <div class="hero-inner">
+            <div class="hero-val" id="homeSteps">0</div>
+            <div class="hero-unit">Steps</div>
+          </div>
+        </div>
+        <div class="hero-info">
+          <div class="hero-big" id="homePct">0%</div>
+          <div class="hero-sub">of your daily goal</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="mini-card">
+          <span class="mc-icon">💧</span>
+          <span class="mc-val" id="homeWater">0</span>
+          <span class="mc-lbl">Glasses</span>
+        </div>
+        <div class="mini-card">
+          <span class="mc-icon">🔥</span>
+          <span class="mc-val" id="homeCals">0</span>
+          <span class="mc-lbl">Calories</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <div class="card-label"><span>📝</span> Today's Focus</div>
+        <div id="homeQuote" style="font-size:18px; font-style:italic; color:var(--text-mid); line-height:1.6;">
+          "Take a deep breath. You are doing great."
+        </div>
+      </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="page" id="pg-steps">
+      <div class="card hero-stat" style="justify-content:center; flex-direction:column; text-align:center;">
+        <div class="hero-circle" style="width:160px; height:160px; margin-bottom:20px;">
+          <svg class="hero-svg" viewBox="0 0 100 100" style="width:160px; height:160px;">
+            <circle class="h-bg" cx="50" cy="50" r="45" style="stroke-width:8"/>
+            <circle class="h-fill" id="stepsRing" cx="50" cy="50" r="45" style="stroke-width:8"/>
+          </svg>
+          <div class="hero-inner">
+            <div class="hero-val" style="font-size:36px;" id="stepsCount">0</div>
+            <div class="hero-unit">Steps</div>
+          </div>
+        </div>
+        <h2 style="font-family:'Fraunces'; font-size:28px; margin-bottom:4px;" id="stepsPct">0%</h2>
+        <p style="color:var(--text-soft); margin-bottom:24px;">Goal: <span id="stepsGoalDisplay">8000</span></p>
+        
+        <button class="btn btn-violet" id="sensorToggleBtn" onclick="toggleSensor()">
+          Start Tracking
+        </button>
+        <p style="font-size:12px; color:var(--text-soft); margin-top:16px;">
+          Keep phone in pocket while walking.
+        </p>
+      </div>
+    </div>
+
+    <!-- WATER -->
+    <div class="page" id="pg-water">
+      <div class="card">
+        <div class="card-label"><span>💧</span> Hydration Log</div>
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:48px; font-weight:700; color:var(--sky); font-family:'Fraunces';">
+            <span id="waterCount">0</span><span style="font-size:20px; color:var(--text-soft);"> / 8</span>
+          </div>
+          <div style="color:var(--text-mid);">Glasses today</div>
+        </div>
+        <div class="water-grid" id="waterGrid">
+          <!-- JS will populate -->
+        </div>
+        <button class="btn btn-ghost" onclick="resetWater()" style="margin-top:24px; font-size:14px;">Reset Day</button>
+      </div>
+      
+      <div class="card" style="background:linear-gradient(135deg, rgba(56,189,248,0.1), transparent);">
+        <div class="card-label"><span>💡</span> Tip</div>
+        <p style="font-size:15px; color:var(--text-mid); line-height:1.5;">
+          Drinking a glass of water before meals helps digestion and keeps you hydrated.
+        </p>
+      </div>
+    </div>
+
+    <!-- DIET -->
+    <div class="page" id="pg-diet">
+      <div class="card">
+        <div class="card-label"><span>🍽️</span> Log Meal</div>
+        
+        <div class="input-group">
+          <label class="f-label">Meal Name</label>
+          <input type="text" id="mealName" class="f-input" placeholder="e.g. Oatmeal">
+        </div>
+        
+        <div class="input-group">
+          <label class="f-label">Calories</label>
+          <input type="number" id="mealCals" class="f-input" placeholder="0" inputmode="numeric">
+        </div>
+
+        <button class="btn btn-rose" onclick="addMeal()">Add Meal +</button>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><span>📅</span> Today's Meals</div>
+        <div id="mealList">
+          <div style="text-align:center; padding:20px; color:var(--text-soft);">No meals logged yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="page" id="pg-schedule">
+      <div class="card">
+        <div class="card-label"><span>🕒</span> Daily Routine</div>
+        <div id="taskList">
+          <!-- JS Populated -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="nav-bar">
+    <div class="nav-item active" onclick="nav('home', this)">
+      <span>🏠</span> Home
+    </div>
+    <div class="nav-item" onclick="nav('steps', this)">
+      <span>👟</span> Steps
+    </div>
+    <div class="nav-item" onclick="nav('water', this)">
+      <span>💧</span> Water
+    </div>
+    <div class="nav-item" onclick="nav('diet', this)">
+      <span>🥗</span> Diet
+    </div>
+    <div class="nav-item" onclick="nav('schedule', this)">
+      <span>📅</span> Plan
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">Message here</div>
+
+<script>
+// ============================================================
+// STATE & STORAGE
+// ============================================================
+const defaultState = {
+  name: '',
+  steps: 0,
+  stepGoal: 8000,
+  water: 0,
+  waterGoal: 8,
+  meals: [], 
+  sensorOn: false,
+  tasks: [
+    {t:'7:00 AM', txt:'Morning Walk & Water', done:false},
+    {t:'8:00 AM', txt:'Healthy Breakfast', done:false},
+    {t:'1:00 PM', txt:'Lunch Break', done:false},
+    {t:'4:00 PM', txt:'Drink Water / Snack', done:false},
+    {t:'7:00 PM', txt:'Light Dinner', done:false},
+    {t:'10:00 PM', txt:'Sleep Routine', done:false},
+  ]
+};
+
+// Safer Load
+let S;
+try {
+  S = JSON.parse(localStorage.getItem('bloom_data')) || defaultState;
+} catch (e) {
+  console.error("Storage error, resetting state");
+  S = defaultState;
+}
+
+// Ensure migration
+if(!S.tasks) S.tasks = defaultState.tasks;
+
+function saveData() {
+  try {
+    localStorage.setItem('bloom_data', JSON.stringify(S));
+  } catch (e) {
+    console.error("Could not save data");
+  }
+}
+
+// ============================================================
+// ONBOARDING LOGIC (FIXED)
+// ============================================================
+const onboardingEl = document.getElementById('onboarding');
+const appShell = document.getElementById('appShell');
+const nameInput = document.getElementById('nameInput');
+
+function initApp() {
+  // Check if name exists
+  if (S.name && S.name.length > 0) {
+    // If user already visited, skip onboarding entirely
+    onboardingEl.style.display = 'none';
+    document.getElementById('displayUserName').textContent = S.name;
+    showApp();
+  } else {
+    // Show onboarding
+    nameInput.focus();
+  }
+  updateUI();
+}
+
+function finishOnboarding() {
+  const name = nameInput.value.trim();
+  if (name.length > 1) {
+    S.name = name;
+    saveData();
+    
+    // 1. Fade out onboarding
+    onboardingEl.classList.add('hidden-screen');
+    
+    // 2. Update name immediately
+    document.getElementById('displayUserName').textContent = S.name;
+    
+    // 3. Prepare App Shell (ensure display is flex)
+    appShell.style.display = 'flex';
+    
+    // 4. Wait a tiny bit for CSS to register 'flex', then fade in
+    // Use requestAnimationFrame for smoother paint timing
+    requestAnimationFrame(() => {
+      appShell.style.opacity = '1';
+    });
+    
+    // 5. Clean up DOM after animation
+    setTimeout(() => {
+      onboardingEl.style.display = 'none';
+    }, 500);
+    
+  } else {
+    showToast("Please enter your name");
+    nameInput.focus();
+  }
+}
+
+function showApp() {
+  // Just ensure opacity is 1
+  appShell.style.opacity = '1';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nav(pageId, btnEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg-' + pageId).classList.add('active');
+  
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  btnEl.classList.add('active');
+
+  updateUI();
+}
+
+// ============================================================
+// STEP COUNTER (ACCELEROMETER)
+// ============================================================
+let motionHandler = null;
+let lastStepTime = 0;
+let prevAccel = 0;
+
+function toggleSensor() {
+  const btn = document.getElementById('sensorToggleBtn');
+  const badge = document.getElementById('sensorBadge');
+  
+  if (S.sensorOn) {
+    if (motionHandler) window.removeEventListener('devicemotion', motionHandler);
+    S.sensorOn = false;
+    btn.textContent = "Start Tracking";
+    btn.classList.remove('btn-ghost');
+    btn.classList.add('btn-violet');
+    badge.style.display = 'none';
+    showToast("Tracking paused");
+  } else {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          if (response === 'granted') startMotion();
+          else showToast("Permission needed for steps");
+        })
+        .catch(console.error);
+    } else {
+      startMotion();
+    }
+  }
+  saveData();
+}
+
+function startMotion() {
+  motionHandler = (e) => {
+    const acc = e.accelerationIncludingGravity;
+    if (!acc) return;
+    
+    const magnitude = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+    const now = Date.now();
+    
+    if (Math.abs(magnitude - prevAccel) > 1.5 && (now - lastStepTime) > 400) {
+      lastStepTime = now;
+      S.steps++;
+      updateUI();
+      saveData();
+      
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
+    prevAccel = magnitude;
+  };
+
+  window.addEventListener('devicemotion', motionHandler, { passive: true });
+  S.sensorOn = true;
+  
+  const btn = document.getElementById('sensorToggleBtn');
+  btn.textContent = "Stop Tracking";
+  btn.classList.remove('btn-violet');
+  btn.classList.add('btn-ghost');
+  document.getElementById('sensorBadge').style.display = 'flex';
+  
+  showToast("Tracking started! Walk freely.");
+  saveData();
+}
+
+// ============================================================
+// WATER
+// ============================================================
+function renderWater() {
+  const grid = document.getElementById('waterGrid');
+  grid.innerHTML = '';
+  for(let i=0; i<S.waterGoal; i++) {
+    const el = document.createElement('div');
+    el.className = `glass ${i < S.water ? 'filled' : ''}`;
+    el.innerHTML = `
+      <div class="glass-emoji">${i < S.water ? '💧' : '🥛'}</div>
+      <div class="glass-txt">250ml</div>
+    `;
+    el.onclick = () => toggleWater(i);
+    grid.appendChild(el);
+  }
+}
+
+function toggleWater(index) {
+  if (index < S.water) {
+    if (index === S.water - 1) S.water = index;
+    else S.water = index + 1;
+  } else {
+    S.water = index + 1;
+  }
+  saveData();
+  updateUI();
+  
+  if(S.water === S.waterGoal) {
+    showToast("Hydration goal reached! 🎉");
+    sendTestNotification(); 
+  }
+}
+
+function resetWater() {
+  S.water = 0;
+  saveData();
+  updateUI();
+  showToast("Water log reset");
+}
+
+// ============================================================
+// DIET
+// ============================================================
+function addMeal() {
+  const nameIn = document.getElementById('mealName');
+  const calIn = document.getElementById('mealCals');
+  
+  const name = nameIn.value.trim();
+  const cals = parseInt(calIn.value);
+  
+  if(!name || isNaN(cals)) {
+    showToast("Please enter name and calories");
+    return;
+  }
+  
+  const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  S.meals.unshift({name, cals, time});
+  
+  nameIn.value = '';
+  calIn.value = '';
+  
+  saveData();
+  updateUI();
+  showToast("Meal added!");
+}
+
+function renderMeals() {
+  const list = document.getElementById('mealList');
+  if(S.meals.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-soft);">No meals logged yet.</div>';
+    return;
+  }
+  
+  list.innerHTML = S.meals.map((m, i) => `
+    <div class="meal-row">
+      <div class="m-emoji">🍽️</div>
+      <div class="m-info">
+        <div class="m-name">${m.name}</div>
+        <div style="font-size:12px; color:var(--text-soft);">${m.time}</div>
+      </div>
+      <div class="m-cal">${m.cals} kcal</div>
+      <button class="m-del" onclick="deleteMeal(${i})">&times;</button>
+    </div>
+  `).join('');
+}
+
+function deleteMeal(idx) {
+  S.meals.splice(idx, 1);
+  saveData();
+  updateUI();
+}
+
+// ============================================================
+// SCHEDULE
+// ============================================================
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  list.innerHTML = S.tasks.map((t, i) => `
+    <div class="task-item">
+      <div class="task-check ${t.done ? 'done' : ''}" onclick="toggleTask(${i})">
+        ${t.done ? '✓' : ''}
+      </div>
+      <div class="task-time">${t.t}</div>
+      <div class="task-text ${t.done ? 'done' : ''}">${t.txt}</div>
+    </div>
+  `).join('');
+}
+
+function toggleTask(idx) {
+  S.tasks[idx].done = !S.tasks[idx].done;
+  saveData();
+  updateUI();
+}
+
+// ============================================================
+// UI UPDATES
+// ============================================================
+function updateUI() {
+  // Steps
+  const stepPct = Math.min(S.steps / S.stepGoal, 1);
+  const offset = 280 - (280 * stepPct);
+  
+  document.getElementById('homeSteps').textContent = S.steps.toLocaleString();
+  document.getElementById('stepsCount').textContent = S.steps.toLocaleString();
+  
+  document.getElementById('homeRing').style.strokeDashoffset = offset;
+  document.getElementById('stepsRing').style.strokeDashoffset = offset;
+  
+  const pctTxt = Math.round(stepPct * 100) + '%';
+  document.getElementById('homePct').textContent = pctTxt;
+  document.getElementById('stepsPct').textContent = pctTxt;
+  document.getElementById('stepsGoalDisplay').textContent = S.stepGoal.toLocaleString();
+  
+  // Sensor Button State
+  const btn = document.getElementById('sensorToggleBtn');
+  const badge = document.getElementById('sensorBadge');
+  if (S.sensorOn) {
+    btn.textContent = "Stop Tracking";
+    btn.classList.remove('btn-violet');
+    btn.classList.add('btn-ghost');
+    badge.style.display = 'flex';
+  } else {
+    btn.textContent = "Start Tracking";
+    btn.classList.add('btn-violet');
+    btn.classList.remove('btn-ghost');
+    badge.style.display = 'none';
+  }
+
+  // Water
+  document.getElementById('homeWater').textContent = S.water;
+  document.getElementById('waterCount').textContent = S.water;
+  renderWater();
+
+  // Diet
+  const totalCals = S.meals.reduce((sum, m) => sum + m.cals, 0);
+  document.getElementById('homeCals').textContent = totalCals;
+  renderMeals();
+
+  // Tasks
+  renderTasks();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function sendTestNotification() {
+  showToast("This is a reminder notification 🔔");
+}
+
+// Initialize
+initApp();
+
+// Prevent rubber-banding on iOS
+document.body.addEventListener('touchmove', function(e) {
+  if (e.target === document.body) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+</script>
+</body>
+</html>
